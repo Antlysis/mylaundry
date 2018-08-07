@@ -12,6 +12,7 @@
     "curl-to-fetch": "^1.2.1",
     "express": "^4.16.3",
     "fs": "0.0.1-security",
+    "json2csv": "^4.2.0",
     "mqtt": "^2.17.0",
     "node-fetch": "^2.1.2",
     "onoff": "^3.0.2",

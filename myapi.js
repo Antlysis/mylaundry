@@ -40,14 +40,14 @@ function onMachine(machine_no, money) {
 app.use(express['static'](__dirname ));
 app.set('view engine', 'pug');
 // Express route for incoming requests for a customer name
-//app.get('/:machine/:money', function(req, res, next) {
-//	//res.sendfile('test.html', {output: req.params.id});
-//	//res.status(200).send('received payment' + req.params.money);
-//	console.log(req.params.id)
-//	console.log(req.params.money)
-//	res.render('index', { machine: req.params.machine, money: req.params.money});
-//	onMachine(req.params.machine, req.params.money)
-//});
+app.get('/:machine/:money', function(req, res, next) {
+	//res.sendfile('test.html', {output: req.params.id});
+	//res.status(200).send('received payment' + req.params.money);
+	console.log(req.params.id)
+	console.log(req.params.money)
+	res.render('index', { machine: req.params.machine, money: req.params.money});
+	onMachine(req.params.machine, req.params.money)
+});
 process.env.MERCHANT_ID = "";
 process.env.TOKEN = '';
 var authToken = {apiKey: "M9UAUUQQ4SNOWMMOVM68QJYGLF", apiSecret: "3818c390-b5da-41ec-8cc2-caec97ea0c51"};
