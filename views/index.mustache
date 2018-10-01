@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Antlysis Venture</title>
+		<style>
+		body {
+			background-color: lightyellow;
+		}
+		.column {
+			float: left;
+			width: 50%;
+			padding: 10px;
+			height: 300px;
+		}
+		.split {
+			height: 50%;
+			width: 50%;
+			position: fixed;
+			z-index: 1;
+			top: 20;
+			overflow-x: hidden;
+			padding-top: 20px;
+		}
+
+		/* Control the left side */
+		.left {
+			left: 0;
+		}
+
+		/* Control the right side */
+		.right {
+			right: 0;
+		}
+		.centered {
+			position: absolute;
+			top: 10%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			text-align: center;
+		}
+		</style>
+	</head>
+	<body>
+
+		<img src ="images/otouch.png"/>
+		<h2>OTouch Laundry PJCC</h1>
+		<div class="split left">
+			<div class="centered">
+				<form action="/admin" method="get">
+					<input type="submit" value="Admin" />
+				</form>
+			</div>	
+		</div>
+		<div class="split right">
+			<div class="centered">
+				<form action="/user_login" method="get">
+					<input type="submit" value="User" />
+				</form>
+			</div>
+		</div>
+		
+	</body>
+</html>

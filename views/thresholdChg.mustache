@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Antlysis Venture</title>
+		<style>
+                	.upperRight {
+				position: fixed;
+				top: 5px;
+				right: 10px;
+			}
+		</style>
+
+	</head>
+	<body>
+		<h1>Otouch Laundry PJCC</h1>
+		<h2>Please change your pricing</h2>
+		<form action="/update_pricing" method="post" onsubmit="return confirm('Do you confirm to change the pricing?');">
+			<fieldset>
+				<label for="coldRun">Cold Temp Price</label>
+				<input type="text" name="coldRun" placeholder="4">
+				<label for="warmRun">Warm Temp Price</label>
+				<input type="text" name="warmRun" placeholder="5">
+				<label for="hotRun">Hot Temp Price</label>
+				<input type="text" name="hotRun" placeholder="6">
+				<input type="submit" value="Change">
+			</fieldset>
+		</form>
+		<form action="/logout" method="get">
+			<label class="upperRight">
+				<input type="submit" value="Logout">
+			</label>
+		</form>
+	</body>
+</html>
