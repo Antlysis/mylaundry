@@ -119,7 +119,7 @@ var myTransRecord = {}
 var myRunRecord = {}
 var sumRunRecord = {}
 var fields = ['mchCode','transId', 'title', 'amount', 'payeeId', 'createAt', 'updateAt', 'status']
-var fields2 = ['no', 'machine', 'side', 'runTime', 'Coin_received', 'Wechat_received', 'status']
+var fields2 = ['no', 'machine', 'side', 'runTime', 'Coin_received', 'Wechat_received', 'status','date', 'startTime', 'endTime']
 var fields3 = ['MachineCode', 'Title', 'TotalRun', 'TotalRunTop', 'TotalRunBot', 'TotalReceived','TotalWechat', 'TotalCoin', 'NoColdRun', 'NoWarmRun', 'NoHotRun', 'ActualTotalRunTime','ActualTotalRunTimeTop', 'ActualTotalRunTimeBot', 'ExpectedTotalRunTime']
 var ePaymentCsv = "EpaymentReport.csv"
 var chkMachineRun = "chkMachineRunStatus.csv"
@@ -144,7 +144,6 @@ const mchStatusCreate = new json2csvParser({fields2});
 const sumStatusAppend = new json2csvParser({fields3, header: false});
 const sumStatusCreate = new json2csvParser({fields3});
 
-
 mqttClient.on('connect', function () {
 	mqttClient.subscribe('connectivity/+')
 	mqttClient.subscribe('Lock/+')
@@ -168,20 +167,20 @@ mqttClient.on('message', function (topic, message) {
 		if (varItem[mchNo].typeOfMachine == "dex_dryer_double") {
 			if (message.toString() == "Locked1") {
 				varItem[mchNo].lockCounter.upper++
-				if (varItem[mchNo].lockCounter.upper == 5 ) {
+				if (varItem[mchNo].lockCounter.upper == 2 ) {
 					varItem[mchNo].locked.upper = true	
 					varItem[mchNo].startTime.upper = moment().format("DD/MM/YYYY HH:mm:ss")
 					console.log("startTime = " + varItem[mchNo].startTime.upper)
-				} else if (varItem[mchNo].lockCounter.upper <= 4) {
+				} else if (varItem[mchNo].lockCounter.upper <= 1) {
 					varItem[mchNo].locked.upper= false
 				}
 			} else if (message.toString() == "Locked2") {
 				varItem[mchNo].lockCounter.lower++
-				if (varItem[mchNo].lockCounter.lower == 5 ) {
+				if (varItem[mchNo].lockCounter.lower == 2 ) {
 					varItem[mchNo].locked.lower = true
 					varItem[mchNo].startTime.lower = moment().format("DD/MM/YYYY HH:mm:ss")
 					console.log("startTime = " + varItem[mchNo].startTime.lower)
-				} else if (varItem[mchNo].lockCounter.lower <= 4) {
+				} else if (varItem[mchNo].lockCounter.lower <= 1) {
 					varItem[mchNo].locked.lower= false
 				}
 			} else if (message.toString() == "Unlocked1") {
@@ -190,10 +189,11 @@ mqttClient.on('message', function (topic, message) {
 					totalRun4doubleDryer++
 					varItem[mchNo].noOfRun.upper++
 					varItem[mchNo].doneTime.upper = moment().format("DD/MM/YYYY HH:mm:ss")
+					var date = moment().format("DD/MM/YYYY") 
 					var diff_upper = moment(varItem[mchNo].doneTime.upper, "DD/MM/YYYY HH:mm:ss").diff(moment(varItem[mchNo].startTime.upper, "DD/MM/YYYY HH:mm:ss"));
 					var d_upper = moment.duration(diff_upper);
 					var timeTaken_upper = [d_upper.hours(), d_upper.minutes(), d_upper.seconds()].join(':')
-					mchRunRecord(mchNo, "upper" ,totalRun4doubleDryer, timeTaken_upper, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS")
+					mchRunRecord(mchNo, "upper" ,totalRun4doubleDryer, timeTaken_upper, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS", date, varItem[mchNo].startTime.upper, varItem[mchNo].doneTime.upper)
 					console.log(myRunRecord[mchNo])
 					console.log(myRunRecord[mchNo][totalRun4doubleDryer])
 					varItem[mchNo].totalPaid = varItem[mchNo].totalPaid + varItem[mchNo].amountPaid
@@ -216,10 +216,11 @@ mqttClient.on('message', function (topic, message) {
 					totalRun4doubleDryer++
 					varItem[mchNo].noOfRun.lower++
 					varItem[mchNo].doneTime.lower = moment().format("DD/MM/YYYY HH:mm:ss")
+					var date = moment().format("DD/MM/YYYY")
 					var diff_lower = moment(varItem[mchNo].doneTime.lower, "DD/MM/YYYY HH:mm:ss").diff(moment(varItem[mchNo].startTime.lower, "DD/MM/YYYY HH:mm:ss"));
 					var d_lower = moment.duration(diff_lower);
 					var timeTaken_lower = [d_lower.hours(), d_lower.minutes(), d_lower.seconds()].join(':')
-					mchRunRecord(mchNo, "lower", totalRun4doubleDryer, timeTaken_lower, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS")
+					mchRunRecord(mchNo, "lower", totalRun4doubleDryer, timeTaken_lower, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS", date, varItem[mchNo].startTime.lower, varItem[mchNo].doneTime.lower)
 					console.log(myRunRecord[mchNo])
 					console.log(myRunRecord[mchNo][totalRun4doubleDryer])
 					varItem[mchNo].totalPaid = varItem[mchNo].totalPaid + varItem[mchNo].amountPaid
@@ -240,12 +241,12 @@ mqttClient.on('message', function (topic, message) {
 		} else {
 			if (message.toString() == "Locked") {
 				varItem[mchNo].lockCounter++
-				if (varItem[mchNo].lockCounter == 5 ) {
+				if (varItem[mchNo].lockCounter == 2 ) {
 					varItem[mchNo].locked = true
 					varItem[mchNo].startTime = moment().format("DD/MM/YYYY HH:mm:ss")
 					console.log("startTime = " + varItem[mchNo].startTime)
 
-				} else if (varItem[mchNo].lockCounter <= 4) {
+				} else if (varItem[mchNo].lockCounter <= 1) {
 					varItem[mchNo].locked = false
 				}
 			} else if (message.toString() == "Unlocked") {
@@ -253,10 +254,11 @@ mqttClient.on('message', function (topic, message) {
 				if (varItem[mchNo].locked) {
 					varItem[mchNo].noOfRun++
 					varItem[mchNo].doneTime = moment().format("DD/MM/YYYY HH:mm:ss")
+					var date = moment().format("DD/MM/YYYY") 
 					var diff = moment(varItem[mchNo].doneTime, "DD/MM/YYYY HH:mm:ss").diff(moment(varItem[mchNo].startTime, "DD/MM/YYYY HH:mm:ss"));
 					var d = moment.duration(diff);
 					var timeTaken = [d.hours(), d.minutes(), d.seconds()].join(':')
-					mchRunRecord(mchNo, "NA", varItem[mchNo].noOfRun, timeTaken, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS")
+					mchRunRecord(mchNo, "NA", varItem[mchNo].noOfRun, timeTaken, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS", date, varItem[mchNo].startTime, varItem[mchNo].doneTime)
 					console.log(myRunRecord[mchNo])
 					console.log(myRunRecord[mchNo][varItem[mchNo].noOfRun])
 					varItem[mchNo].totalPaid = varItem[mchNo].totalPaid + varItem[mchNo].amountPaid
@@ -296,11 +298,12 @@ mqttClient.on('message', function (topic, message) {
 				varItem[mchNo].coinPaid.ca2 = varItem[mchNo].coinPaid.ca2 + 1
 				varItem[mchNo].amountPaid = varItem[mchNo].amountPaid + 1
 			}
+			console.log(message.toString() + "  " + mchNo + " " + moment().format("DD/MM/YYYY HH:mm:ss"))
 		} else {
 			varItem[mchNo].coinPaid = varItem[mchNo].coinPaid + 1
 			varItem[mchNo].amountPaid = varItem[mchNo].amountPaid + 1
+			console.log(message.toString() + "  " + mchNo + " " + moment().format("DD/MM/YYYY HH:mm:ss"))
 		}
-		console.log(message.toString() + "  " + mchNo)
 	} else if (topic.match(/versionFeed/g)) {
 		var pattern = /versionFeed\/([0-9a-zA-Z_]+)/i
 		var mchNo = topic.replace(pattern, "$1")
@@ -323,14 +326,14 @@ function checkHeartbeat () {
 					subject: 'Sending Email to notify that the falty machine is back to normal condition',
 					text: key + " is working normally now."
 				};
-				//transporter.sendMail(mailOptions, function(error, info){
-			//		if (error) {
-			//			console.log(error);
-			//		} else {
-			//			console.log('Email sent: ' + info.response);
-			//		}
-			//	});
-			//	varItem[key].sent = false
+				transporter.sendMail(mailOptions, function(error, info){
+					if (error) {
+						console.log(error);
+					} else {
+						console.log('Email sent: ' + info.response);
+					}
+				});
+				varItem[key].sent = false
 			}				
 		} else {
 			if (doneSent) {
@@ -341,21 +344,21 @@ function checkHeartbeat () {
 					subject: 'Sending Email to notify that one of the machine is not functioning',
 					text: key + " is not functioning, please check it out. Epayment to this machine is disabled."
 				};
-			//	transporter.sendMail(mailOptions, function(error, info){
-			//		if (error) {
-			//			console.log(error);
-			//		} else {
-			//			console.log('Email sent: ' + info.response);
-			//		}
-			//	});
-			//	varItem[key].sent = true
+				transporter.sendMail(mailOptions, function(error, info){
+					if (error) {
+						console.log(error);
+					} else {
+						console.log('Email sent: ' + info.response);
+					}
+				});
+				varItem[key].sent = true
 			}
 		}
 	});
 }
 setInterval(checkHeartbeat, 60000);
 
-var j = schedule.scheduleJob('00 13 * * *', function(){
+var j = schedule.scheduleJob('00 00 * * *', function(){
 	console.log('The answer to life, the universe, and everything!');
 	Object.keys(varItem).forEach(function(key) {
 		if (varItem[key].typeOfMachine == "dex_dryer_double") {
@@ -429,7 +432,7 @@ function createEntry(mchCode, transId, title, amount, payeeId, createAt, updateA
 	myTransRecord[transId].status = status;
 }
 
-function mchRunRecord(mchCode, side, noOfRun, runTime, coinPaid, wechatPaid, status){
+function mchRunRecord(mchCode, side, noOfRun, runTime, coinPaid, wechatPaid, status, date, startTime, endTime){
 	myRunRecord[mchCode] = {};
 	myRunRecord[mchCode][noOfRun] = {};
 	myRunRecord[mchCode][noOfRun].no = noOfRun;
@@ -439,6 +442,9 @@ function mchRunRecord(mchCode, side, noOfRun, runTime, coinPaid, wechatPaid, sta
 	myRunRecord[mchCode][noOfRun].Wechat_received = wechatPaid;
 	myRunRecord[mchCode][noOfRun].Coin_received = coinPaid;
 	myRunRecord[mchCode][noOfRun].status = status;
+	myRunRecord[mchCode][noOfRun].date = date;
+	myRunRecord[mchCode][noOfRun].startTime = startTime;
+	myRunRecord[mchCode][noOfRun].endTime = endTime;
 }
 //MachineCode', 'Title', 'TotalRun', 'TotalWechat', 'TotalCoin', 'NoColdRun', 'NoWarmRun', 'NoHotRun', 'ActualTotalRunTime', 'ExpectedTotalRunTime']
 function sumExecuteRecord(mchCode,title, totalRun, totalRunTop, totalRunBot, totalPaid, totalWechat, totalCoin, noColdRun, noWarmRun, noHotRun, actualTotalRunTime, actualTotalRunTimeTop, actualTotalRunTimeBot, expectedTotalRunTime) {
@@ -578,7 +584,7 @@ function makeid() {
 
 function generateSign(data, method, noncestr, privateKey, requestUrl, signtype, time) {
 	var otStr = makeid()
-	var mydata = {data, "method": method, "nonceStr":noncestr,
+	var mydata = {"data": data, "method": method, "nonceStr":noncestr,
 		   "privateKey": privateKey,"requestUrl": requestUrl,
 		    "signType": signtype, "timestamp":time}
 	console.log(mydata)
@@ -780,12 +786,13 @@ function refundPayment(transId, refundAmount, reason, type) {
 			})
 	}
 }
-////queryTrans("180912150940020027044581").then(function(){
-////	console.log(myItem)
-////	createEntry("12345", "180912150940020027044581", myItem.order.title, myItem.order.amount, myItem.payee.userId, myItem.createdAt, myItem.updatedAt, myItem.status)
-////	console.log(myTransRecord["180912150940020027044581"])
-////	save2csv("ePayment",myTransRecord["180912150940020027044581"])
-////})
+//queryTrans("181017061204020021854651").then(function(){
+//	console.log(myItem)
+//	createEntry("12345", "180912150940020027044581", myItem.order.title, myItem.order.amount, myItem.payee.userId, myItem.createdAt, myItem.updatedAt, myItem.status)
+//	console.log(myTransRecord["180912150940020027044581"])
+//	save2csv("ePayment",myTransRecord["180912150940020027044581"])
+//})
+
 //setTimeout(function() {
 //	console.log(myItem) }, 4000)
 //refundPayment("180805045658020025384698", 200, "i just wanna refund", "FULL")
@@ -800,8 +807,24 @@ app.get('/wechat/pay', function(req, res) {
 	queryTrans(transId).then(function(){
 		console.log(myItem)
 		if (myItem.status == "SUCCESS") {
-			createEntry(mchNo, transId, myItem.order.title, myItem.order.amount, myItem.payee.userId, myItem.createdAt, myItem.updatedAt, myItem.status)
-			res.status(200).send("The payment is too much");			
+			//createEntry(mchNo, transId, myItem.order.title, myItem.order.amount, myItem.payee.userId, myItem.createdAt, myItem.updatedAt, myItem.status)
+                        //setTimeout(checkMachineStatus, 10000, transId, mchNo)
+                        //}console.log(myTransRecord[transId])
+                        var amountToPay = myItem.order.amount/100
+                        if (amountToPay <= 25) {
+                                if (varItem[mchNo].active) {
+                                        onMachine(mchNo,amountToPay)
+                                        //setTimeout(checkMachineStatus, 20000, transId, mchNo)
+                                        varItem[mchNo].wechatPaid = varItem[mchNo].wechatPaid + amountToPay 
+                                        varItem[mchNo].amountPaid = varItem[mchNo].amountPaid, + amountToPay
+                                        res.status(200).send ("Payment has been paid, Thanks for using our service.")
+                                } else {
+                                        refundPayment(transId, myItem.order.amount, "The machine is not ready for Epayment right now.", "FULL")
+                                        res.status(200).send("Sorry, This machine is not ready for Epayment right now. Please try again later. ")
+                                }
+                        } else {
+				res.status(200).send("The payment is too much");
+			}
 		}
 	})
 	//res.status(200).send(req.body);
