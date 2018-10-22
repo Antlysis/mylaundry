@@ -119,7 +119,7 @@ var myTransRecord = {}
 var myRunRecord = {}
 var sumRunRecord = {}
 var fields = ['mchCode','transId', 'title', 'amount', 'payeeId', 'createAt', 'updateAt', 'status']
-var fields2 = ['no', 'machine', 'side', 'runTime', 'Coin_received', 'Wechat_received', 'status']
+var fields2 = ['no', 'machine', 'side', 'runTime', 'Coin_received', 'Wechat_received', 'status','date', 'startTime', 'endTime']
 var fields3 = ['MachineCode', 'Title', 'TotalRun', 'TotalRunTop', 'TotalRunBot', 'TotalReceived','TotalWechat', 'TotalCoin', 'NoColdRun', 'NoWarmRun', 'NoHotRun', 'ActualTotalRunTime','ActualTotalRunTimeTop', 'ActualTotalRunTimeBot', 'ExpectedTotalRunTime']
 var ePaymentCsv = "EpaymentReport.csv"
 var chkMachineRun = "chkMachineRunStatus.csv"
@@ -190,10 +190,11 @@ mqttClient.on('message', function (topic, message) {
 					totalRun4doubleDryer++
 					varItem[mchNo].noOfRun.upper++
 					varItem[mchNo].doneTime.upper = moment().format("DD/MM/YYYY HH:mm:ss")
+					var date = moment().format("DD/MM/YYYY")
 					var diff_upper = moment(varItem[mchNo].doneTime.upper, "DD/MM/YYYY HH:mm:ss").diff(moment(varItem[mchNo].startTime.upper, "DD/MM/YYYY HH:mm:ss"));
 					var d_upper = moment.duration(diff_upper);
 					var timeTaken_upper = [d_upper.hours(), d_upper.minutes(), d_upper.seconds()].join(':')
-					mchRunRecord(mchNo, "upper" ,totalRun4doubleDryer, timeTaken_upper, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS")
+					mchRunRecord(mchNo, "upper" ,totalRun4doubleDryer, timeTaken_upper, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS", date, varItem[mchNo].startTime.upper, varItem[mchNo].doneTime.upper)
 					console.log(myRunRecord[mchNo])
 					console.log(myRunRecord[mchNo][totalRun4doubleDryer])
 					varItem[mchNo].totalPaid = varItem[mchNo].totalPaid + varItem[mchNo].amountPaid
@@ -216,10 +217,11 @@ mqttClient.on('message', function (topic, message) {
 					totalRun4doubleDryer++
 					varItem[mchNo].noOfRun.lower++
 					varItem[mchNo].doneTime.lower = moment().format("DD/MM/YYYY HH:mm:ss")
+					var date = moment().format("DD/MM/YYYY")
 					var diff_lower = moment(varItem[mchNo].doneTime.lower, "DD/MM/YYYY HH:mm:ss").diff(moment(varItem[mchNo].startTime.lower, "DD/MM/YYYY HH:mm:ss"));
 					var d_lower = moment.duration(diff_lower);
 					var timeTaken_lower = [d_lower.hours(), d_lower.minutes(), d_lower.seconds()].join(':')
-					mchRunRecord(mchNo, "lower", totalRun4doubleDryer, timeTaken_lower, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS")
+					mchRunRecord(mchNo, "lower", totalRun4doubleDryer, timeTaken_lower, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS", date, varItem[mchNo].startTime.lower, varItem[mchNo].doneTime.lower)
 					console.log(myRunRecord[mchNo])
 					console.log(myRunRecord[mchNo][totalRun4doubleDryer])
 					varItem[mchNo].totalPaid = varItem[mchNo].totalPaid + varItem[mchNo].amountPaid
@@ -253,10 +255,11 @@ mqttClient.on('message', function (topic, message) {
 				if (varItem[mchNo].locked) {
 					varItem[mchNo].noOfRun++
 					varItem[mchNo].doneTime = moment().format("DD/MM/YYYY HH:mm:ss")
+					var date = moment().format("DD/MM/YYYY")
 					var diff = moment(varItem[mchNo].doneTime, "DD/MM/YYYY HH:mm:ss").diff(moment(varItem[mchNo].startTime, "DD/MM/YYYY HH:mm:ss"));
 					var d = moment.duration(diff);
 					var timeTaken = [d.hours(), d.minutes(), d.seconds()].join(':')
-					mchRunRecord(mchNo, "NA", varItem[mchNo].noOfRun, timeTaken, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS")
+					mchRunRecord(mchNo, "NA", varItem[mchNo].noOfRun, timeTaken, varItem[mchNo].coinPaid, varItem[mchNo].wechatPaid, "SUCCESS", date, varItem[mchNo].startTime, varItem[mchNo].doneTime)
 					console.log(myRunRecord[mchNo])
 					console.log(myRunRecord[mchNo][varItem[mchNo].noOfRun])
 					varItem[mchNo].totalPaid = varItem[mchNo].totalPaid + varItem[mchNo].amountPaid
@@ -429,7 +432,7 @@ function createEntry(mchCode, transId, title, amount, payeeId, createAt, updateA
 	myTransRecord[transId].status = status;
 }
 
-function mchRunRecord(mchCode, side, noOfRun, runTime, coinPaid, wechatPaid, status){
+function mchRunRecord(mchCode, side, noOfRun, runTime, coinPaid, wechatPaid, status, date, startTime, endTime){
 	myRunRecord[mchCode] = {};
 	myRunRecord[mchCode][noOfRun] = {};
 	myRunRecord[mchCode][noOfRun].no = noOfRun;
@@ -439,6 +442,9 @@ function mchRunRecord(mchCode, side, noOfRun, runTime, coinPaid, wechatPaid, sta
 	myRunRecord[mchCode][noOfRun].Wechat_received = wechatPaid;
 	myRunRecord[mchCode][noOfRun].Coin_received = coinPaid;
 	myRunRecord[mchCode][noOfRun].status = status;
+	myRunRecord[mchCode][noOfRun].date = date;
+	myRunRecord[mchCode][noOfRun].startTime = startTime;
+	myRunRecord[mchCode][noOfRun].endTime = endTime;
 }
 //MachineCode', 'Title', 'TotalRun', 'TotalWechat', 'TotalCoin', 'NoColdRun', 'NoWarmRun', 'NoHotRun', 'ActualTotalRunTime', 'ExpectedTotalRunTime']
 function sumExecuteRecord(mchCode,title, totalRun, totalRunTop, totalRunBot, totalPaid, totalWechat, totalCoin, noColdRun, noWarmRun, noHotRun, actualTotalRunTime, actualTotalRunTimeTop, actualTotalRunTimeBot, expectedTotalRunTime) {
