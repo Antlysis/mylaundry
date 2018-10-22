@@ -1,4 +1,4 @@
-/////////////////////////////////////
+////////////////////////////////////
 ///// Required Packages /////////////
 /////////////////////////////////////
 
@@ -87,7 +87,7 @@ function authenticate_user(req, username, password) {
 
 
 
-app.use((req, res, next) => {
+app.use(function (req, res, next){
 	res.setHeader('Access-Control-Allow-Origin', '*');
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
@@ -323,14 +323,14 @@ function checkHeartbeat () {
 					subject: 'Sending Email to notify that the falty machine is back to normal condition',
 					text: key + " is working normally now."
 				};
-				//transporter.sendMail(mailOptions, function(error, info){
-			//		if (error) {
-			//			console.log(error);
-			//		} else {
-			//			console.log('Email sent: ' + info.response);
-			//		}
-			//	});
-			//	varItem[key].sent = false
+				transporter.sendMail(mailOptions, function(error, info){
+					if (error) {
+						console.log(error);
+					} else {
+						console.log('Email sent: ' + info.response);
+					}
+				});
+				varItem[key].sent = false
 			}				
 		} else {
 			if (doneSent) {
@@ -341,14 +341,14 @@ function checkHeartbeat () {
 					subject: 'Sending Email to notify that one of the machine is not functioning',
 					text: key + " is not functioning, please check it out. Epayment to this machine is disabled."
 				};
-			//	transporter.sendMail(mailOptions, function(error, info){
-			//		if (error) {
-			//			console.log(error);
-			//		} else {
-			//			console.log('Email sent: ' + info.response);
-			//		}
-			//	});
-			//	varItem[key].sent = true
+				transporter.sendMail(mailOptions, function(error, info){
+					if (error) {
+						console.log(error);
+					} else {
+						console.log('Email sent: ' + info.response);
+					}
+				});
+				varItem[key].sent = true
 			}
 		}
 	});
@@ -800,8 +800,20 @@ app.get('/wechat/pay', function(req, res) {
 	queryTrans(transId).then(function(){
 		console.log(myItem)
 		if (myItem.status == "SUCCESS") {
-			createEntry(mchNo, transId, myItem.order.title, myItem.order.amount, myItem.payee.userId, myItem.createdAt, myItem.updatedAt, myItem.status)
-			res.status(200).send("The payment is too much");			
+			var amountToPay = myItem.order.amount/100
+			if (amountToPay <= 25){
+				if (varItem[mchNo].active) {
+					onMachine(mchNo, amountToPay)
+					varItem[mchNo].wechatPaid = varItem[mchNo].wechatPaid + amountToPay
+					varItem[mchNo].amountPaid = varItem[mchNo].amountPaid + amountToPay
+					res.status(200).send ("Payment has been paid, Thanks for using our service.")
+				} else {
+					refundPayment(transId, myItem.order.amount, "The machine is not ready for Epayment rightnow.", "FULL")
+					res.status(200).send("Sorry, This machine is not ready for Epayment right now, Please try again later.")
+				}
+			} else {
+				res.sttus(200).send("The payment is too much");
+			}
 		}
 	})
 	//res.status(200).send(req.body);
@@ -915,5 +927,5 @@ function log(statCode, url, ip, err) {
 }
 
 
-app.listen(80);
+app.listen(80, '127.0.0.1');
 console.log('App Server running at port 80');

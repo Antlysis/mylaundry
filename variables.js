@@ -1,6 +1,6 @@
 module.exports = {
-	"6786f3831d7a750bac397d8967b81044": {
-						typeOfMachine: "",
+	"51a677a2156e87fe4d5c3843cc926839": {
+						typeOfMachine: "ipsoDryer",
 						machineName: "",
 						active: false,
 						sent: false,
@@ -22,8 +22,8 @@ module.exports = {
 						lockCounter: 0,
 						version: 0
 	},
-	"6786f3831d7a750bac397d8967b81044_12": {
-						typeOfMachine: "",
+	"c08a50833ee1a977cea0f4dc2d2da336": {
+						typeOfMachine: "ipsoWasher",
 						machineName: "",
 						active: false,
 						sent: false,
